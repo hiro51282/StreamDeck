@@ -72,14 +72,23 @@ void executeAction(const char *title, const char *url, bool showResponse)
 
     if (httpCode > 0)
     {
-        if (showResponse)
-            lcd.print(http.getString());
-        else
-            lcd.print("OK");
+        String payload = http.getString();
+
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print(title);
+
+        lcd.setCursor(0, 1);
+        lcd.print(payload);
     }
     else
     {
-        lcd.print("FAIL");
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print(title);
+
+        lcd.setCursor(0, 1);
+        lcd.print("HTTP FAIL");
     }
 
     http.end();
