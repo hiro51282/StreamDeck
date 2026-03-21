@@ -1,0 +1,34 @@
+# =========================
+# 共通
+# =========================
+.env
+*.log
+*.tmp
+.DS_Store
+
+# =========================
+# ESP32（PlatformIO）
+# =========================
+esp32/.pio
+esp32/.vscode
+
+# 機密情報（ESP32）
+esp32/src/wifi_config.h
+esp32/src/wol_config.h
+# =========================
+# Server（Python）
+# =========================
+server/venv
+server/__pycache__/
+server/*.pyc
+
+# 機密情報（Server）
+server/config.py
+
+# =========================
+# その他
+# =========================
+*.bak
+*.swp
+# OS系
+Thumbs.db

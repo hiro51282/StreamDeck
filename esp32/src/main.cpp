@@ -1,0 +1,273 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
+#include <HTTPClient.h>
+#include "wifi_config.h"
+#include "actions.h"
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// ===== ピン =====
+#define SW 14
+#define DT 27
+#define CLK 26
+#define BACK 25
+#define I2C_SCL 22
+#define I2C_SDA 23
+
+WiFiUDP udp;
+
+// ===== 状態 =====
+enum State
+{
+  MENU,
+  EXECUTING
+};
+
+enum MenuType
+{
+  MENU_MAIN,
+  MENU_POWER,
+  MENU_MONITOR
+};
+State state = MENU;
+
+int lastCLK;
+int cursor = 0;
+int menu = MENU_MAIN;
+
+unsigned long lastMove = 0;
+unsigned long actionStart = 0;
+unsigned long bootTime;
+bool bootDone = false;
+
+// ===== 関数 =====
+void drawMenu();
+void handleClick();
+void handleWiFi();
+void handleEncoder();
+void handleButtons();
+
+// =========================
+// 初期化
+// =========================
+void setup()
+{
+  bootTime = millis();
+  pinMode(CLK, INPUT);
+  pinMode(DT, INPUT);
+  pinMode(SW, INPUT_PULLUP);
+  pinMode(BACK, INPUT_PULLUP);
+
+  Wire.begin(I2C_SDA, I2C_SCL);
+  lcd.init();
+  lcd.backlight();
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Hello");
+  lcd.setCursor(0, 1);
+  lcd.print("Connecting...");
+  delay(2000);
+
+  lastCLK = digitalRead(CLK);
+
+  drawMenu();
+
+  // WiFi（非ブロッキング）
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+}
+
+// =========================
+// メインループ
+// =========================
+void loop()
+{
+  handleWiFi();
+
+  if (!bootDone)
+  {
+    if (millis() - bootTime > 2000)
+    {
+      bootDone = true;
+      drawMenu();
+    }
+    return;
+  }
+
+  handleEncoder();
+  handleButtons();
+
+  if (state == EXECUTING)
+  {
+    if (millis() - actionStart > 1000)
+    {
+      state = MENU;
+      drawMenu();
+    }
+  }
+}
+
+// =========================
+// Wifi処理
+// =========================
+void handleWiFi()
+{
+  static bool connected = false;
+  static unsigned long wifiMsgTime = 0;
+
+  // 接続された瞬間
+  if (!connected && WiFi.status() == WL_CONNECTED)
+  {
+    connected = true;
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("WiFi Connected");
+
+    wifiMsgTime = millis();
+  }
+
+  // 一定時間後にメニューへ戻る
+  if (connected && wifiMsgTime != 0 && millis() - wifiMsgTime > 1000)
+  {
+    wifiMsgTime = 0;
+    drawMenu();
+  }
+}
+// =========================
+// エンコーダ処理
+// =========================
+void handleEncoder()
+{
+  if (state != MENU)
+    return;
+
+  int currentCLK = digitalRead(CLK);
+
+  if (currentCLK != lastCLK && currentCLK == LOW)
+  {
+    if (millis() - lastMove > 20)
+    {
+      if (digitalRead(DT) != currentCLK)
+        cursor++;
+      else
+        cursor--;
+
+      int maxItems = 2;
+      cursor = (cursor + maxItems) % maxItems;
+
+      drawMenu();
+      lastMove = millis();
+    }
+  }
+
+  lastCLK = currentCLK;
+}
+
+// =========================
+// ボタン処理
+// =========================
+void handleButtons()
+{
+  static unsigned long lastClick = 0;
+
+  // 決定
+  if (digitalRead(SW) == LOW && millis() - lastClick > 200)
+  {
+    lastClick = millis();
+    handleClick();
+  }
+
+  // 戻る（いつでも効く）
+  if (digitalRead(BACK) == LOW && millis() - lastClick > 200)
+  {
+    lastClick = millis();
+
+    state = MENU;
+    menu = MENU_MAIN;
+    cursor = 0;
+
+    lcd.clear(); // ←これ追加
+    drawMenu();
+
+    return;
+  }
+}
+
+// =========================
+// メニュー描画
+// =========================
+void drawMenu()
+{
+  lcd.clear();
+
+  if (menu == MENU_MAIN)
+  {
+    lcd.setCursor(0, 0);
+    lcd.print(cursor == 0 ? "> Power" : "  Power");
+    lcd.setCursor(0, 1);
+    lcd.print(cursor == 1 ? "> Monitor" : "  Monitor");
+  }
+
+  if (menu == 1)
+  {
+    lcd.setCursor(0, 0);
+    lcd.print(cursor == 0 ? "> Start" : "  Start");
+    lcd.setCursor(0, 1);
+    lcd.print(cursor == 1 ? "> Shutdown" : "  Shutdown");
+  }
+
+  if (menu == 2)
+  {
+    lcd.setCursor(0, 0);
+    lcd.print(cursor == 0 ? "> CPU" : "  CPU");
+    lcd.setCursor(0, 1);
+    lcd.print(cursor == 1 ? "> Temp" : "  Temp");
+  }
+}
+
+// =========================
+// 決定処理
+// =========================
+void handleClick()
+{
+  // メニュー遷移
+  if (menu == 0)
+  {
+    menu = cursor + 1;
+    cursor = 0;
+    drawMenu();
+    return;
+  }
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+
+  if (menu == 1)
+  {
+    if (cursor == 0)
+    {
+      // WOLはHTTPじゃないから別
+      executeWOL();
+    }
+    else
+    {
+      executeAction("Shutdown", "http://" SERVER_IP ":5000/shutdown?token=" TOKEN, false);
+    }
+  }
+
+  if (menu == 2)
+  {
+    if (cursor == 0)
+    {
+      executeAction("Status", "http://" SERVER_IP ":5000/status?token=" TOKEN, true);
+    }
+    else
+    {
+      executeAction("Temp", "http://" SERVER_IP ":5000/temp?token=" TOKEN, true);
+    }
+  }
+}
+

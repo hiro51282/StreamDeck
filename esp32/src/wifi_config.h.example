@@ -1,0 +1,4 @@
+#define WIFI_SSID "your-ssid"
+#define WIFI_PASS "your-password"
+#define SERVER_IP "192.168.x.x"
+#define TOKEN "your-token"
