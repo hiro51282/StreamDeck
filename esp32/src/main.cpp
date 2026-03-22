@@ -4,7 +4,6 @@
 #include <WiFiUdp.h>
 #include <HTTPClient.h>
 #include "wifi_config.h"
-#include "actions.h"
 #include "display.h"
 #include "menu.h"
 
@@ -151,7 +150,7 @@ void handleEncoder()
 
   if (currentCLK != lastCLK && currentCLK == LOW)
   {
-    if (millis() - lastMove > 20)
+    if (millis() - lastMove > 35)
     {
       // ===== CONFIRM =====
       if (state == CONFIRM)
@@ -162,7 +161,9 @@ void handleEncoder()
       // ===== MENU =====
       else if (state == MENU)
       {
-        if (digitalRead(DT) != currentCLK)
+        bool clockwise = (digitalRead(DT) == currentCLK);
+
+        if (clockwise)
           cursor++;
         else
           cursor--;
@@ -253,23 +254,4 @@ void handleClick()
   {
     items[cursor].action();
   }
-}
-void actionWOL()
-{
-  executeWOL();
-}
-
-void actionShutdown()
-{
-  executeAction("Shutdown", "http://" SERVER_IP ":5000/shutdown?token=" TOKEN, false);
-}
-
-void actionStatus()
-{
-  executeAction("Status", "http://" SERVER_IP ":5000/status?token=" TOKEN, true);
-}
-
-void actionTemp()
-{
-  executeAction("Temp", "http://" SERVER_IP ":5000/temp?token=" TOKEN, true);
 }

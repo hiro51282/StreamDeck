@@ -34,14 +34,36 @@ void drawMenu(int menu, int cursor)
     lcd.clear();
 
     MenuItem *items = getCurrentMenu(menu);
+    int size = getMenuSize(menu);
 
+    // スクロール開始位置
+    int start = cursor;
+    if (cursor > 0)
+    {
+        start = cursor - 1;
+    }
+
+    // 範囲補正（はみ出し防止）
+    if (start < 0)
+        start = 0;
+    if (start >= size)
+        start = size - 1;
+
+    // --- 1行目 ---
     lcd.setCursor(0, 0);
-    lcd.print(cursor == 0 ? ">" : " ");
-    lcd.print(items[0].label);
+    if (start < size)
+    {
+        lcd.print(cursor == start ? ">" : " ");
+        lcd.print(items[start].label);
+    }
 
+    // --- 2行目 ---
     lcd.setCursor(0, 1);
-    lcd.print(cursor == 1 ? ">" : " ");
-    lcd.print(items[1].label);
+    if (start + 1 < size)
+    {
+        lcd.print(cursor == start + 1 ? ">" : " ");
+        lcd.print(items[start + 1].label);
+    }
 }
 
 // =========================

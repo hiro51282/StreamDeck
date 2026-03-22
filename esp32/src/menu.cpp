@@ -1,10 +1,5 @@
 #include "menu.h"
-
-// actions.cppの関数を使う
-void actionWOL();
-void actionShutdown();
-void actionStatus();
-void actionTemp();
+#include "actions.h"
 
 MenuItem mainMenu[] = {
     {"Power", nullptr},
@@ -16,7 +11,10 @@ MenuItem powerMenu[] = {
 
 MenuItem monitorMenu[] = {
     {"CPU", actionStatus},
-    {"Temp", actionTemp}};
+    {"Temp", actionTemp},
+    {"Mem", actionMemory},
+    {"Ping", actionPing},
+    {"Up", actionUptime}};
 
 MenuItem *getCurrentMenu(int menu)
 {
