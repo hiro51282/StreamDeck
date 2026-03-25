@@ -3,6 +3,8 @@
 #include <HTTPClient.h>
 #include "wol_config.h"
 #include "wifi_config.h"
+#include "actions.h"
+#include "display.h"
 
 // 外部参照（main.cppにあるやつ）
 extern LiquidCrystal_I2C lcd;
@@ -53,11 +55,7 @@ void executeWOL()
 // =========================
 void executeAction(const char *title, const char *url, bool showResponse)
 {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(title);
-    lcd.setCursor(0, 1);
-    lcd.print("Sending...");
+    showMessage(title, "Sending...");
 
     HTTPClient http;
     http.begin(url);
@@ -74,22 +72,11 @@ void executeAction(const char *title, const char *url, bool showResponse)
     if (httpCode > 0)
     {
         String payload = http.getString();
-
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(title);
-
-        lcd.setCursor(0, 1);
-        lcd.print(payload);
+        showMessage(title, payload.c_str());
     }
     else
     {
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(title);
-
-        lcd.setCursor(0, 1);
-        lcd.print("HTTP FAIL");
+        showMessage(title, "HTTP FAIL");
     }
 
     http.end();
@@ -98,40 +85,13 @@ void executeAction(const char *title, const char *url, bool showResponse)
     actionStart = millis();
 }
 
-void actionWOL()
+String buildUrl(const char *path)
 {
-  executeWOL();
+    return String("http://") + SERVER_IP + ":5000/" + path + "?token=" + TOKEN;
 }
 
-void actionShutdown()
+void executeApi(const char *title, const char *path, bool showResponse)
 {
-    executeAction("Shutdown", "http://" SERVER_IP ":5000/shutdown?token=" TOKEN, false);
-}
-
-void actionStatus()
-{
-    executeAction("Status", "http://" SERVER_IP ":5000/status?token=" TOKEN, true);
-}
-
-void actionTemp()
-{
-    executeAction("Temp", "http://" SERVER_IP ":5000/temp?token=" TOKEN, true);
-}
-
-void actionMemory()
-{
-    String url = "http://" + String(SERVER_IP) + ":5000/memory?token=" + String(TOKEN);
-    executeAction("Memory", url.c_str(), true);
-}
-
-void actionPing()
-{
-    String url = "http://" + String(SERVER_IP) + ":5000/ping?token=" + String(TOKEN);
-    executeAction("Ping", url.c_str(), true);
-}
-
-void actionUptime()
-{
-    String url = "http://" + String(SERVER_IP) + ":5000/uptime?token=" + String(TOKEN);
-    executeAction("Uptime", url.c_str(), true);
+    String url = buildUrl(path);
+    executeAction(title, url.c_str(), showResponse);
 }

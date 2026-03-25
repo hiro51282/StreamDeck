@@ -2,8 +2,9 @@
 
 struct MenuItem
 {
-  const char *label;
-  void (*action)();
+    const char *label;
+    const char *path;
+    bool showResponse;
 };
 
 MenuItem *getCurrentMenu(int menu);

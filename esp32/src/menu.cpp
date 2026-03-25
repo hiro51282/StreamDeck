@@ -1,20 +1,19 @@
 #include "menu.h"
-#include "actions.h"
 
 MenuItem mainMenu[] = {
-    {"Power", nullptr},
-    {"Monitor", nullptr}};
+    {"Power", nullptr, false},
+    {"Monitor", nullptr, false}};
 
 MenuItem powerMenu[] = {
-    {"Start", actionWOL},
-    {"Shutdown", actionShutdown}};
+    {"Start", "wol", false},
+    {"Shutdown", "shutdown", false}};
 
 MenuItem monitorMenu[] = {
-    {"CPU", actionStatus},
-    {"Temp", actionTemp},
-    {"Mem", actionMemory},
-    {"Ping", actionPing},
-    {"Up", actionUptime}};
+    {"CPU", "status", true},
+    {"Temp", "temp", true},
+    {"Mem", "memory", true},
+    {"Ping", "ping", true},
+    {"Up", "uptime", true}};
 
 MenuItem *getCurrentMenu(int menu)
 {

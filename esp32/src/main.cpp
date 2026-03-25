@@ -6,6 +6,7 @@
 #include "wifi_config.h"
 #include "display.h"
 #include "menu.h"
+#include "actions.h"
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -18,11 +19,6 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define I2C_SDA 23
 
 WiFiUDP udp;
-
-void actionWOL();
-void actionShutdown();
-void actionStatus();
-void actionTemp();
 
 // ===== 状態 =====
 enum State
@@ -42,7 +38,7 @@ enum MenuType
 State state = MENU;
 
 const char *confirmTitle = "";
-void (*confirmAction)() = nullptr;
+const char *confirmPath = nullptr;
 
 int confirmCursor = 0;  // 0:NO 1:YES
 int confirmTarget = -1; // どのアクションか識別
@@ -195,9 +191,9 @@ void handleButtons()
 
     if (state == CONFIRM)
     {
-      if (confirmCursor == 1 && confirmAction != nullptr)
+      if (confirmCursor == 1)
       {
-        confirmAction();
+        executeApi("Shutdown", confirmPath, false);
       }
 
       state = MENU;
@@ -241,7 +237,7 @@ void handleClick()
   if (menu == MENU_POWER && cursor == 1)
   {
     confirmTitle = "Shutdown?";
-    confirmAction = actionShutdown;
+    confirmPath = "shutdown";
 
     state = CONFIRM;
     confirmCursor = 0;
@@ -250,8 +246,37 @@ void handleClick()
     return;
   }
 
-  if (items[cursor].action != nullptr)
+  MenuItem item = items[cursor];
+
+  // メニュー遷移
+  if (menu == MENU_MAIN)
   {
-    items[cursor].action();
+    menu = cursor + 1;
+    cursor = 0;
+    drawMenu(menu, cursor);
+    return;
   }
+
+  // WOLだけ特別処理
+  if (strcmp(item.path, "wol") == 0)
+  {
+    executeWOL();
+    return;
+  }
+
+  // Shutdownだけconfirm
+  if (strcmp(item.path, "shutdown") == 0)
+  {
+    confirmTitle = "Shutdown?";
+    confirmPath = "shutdown";
+
+    state = CONFIRM;
+    confirmCursor = 0;
+
+    drawConfirm(confirmTitle, confirmCursor);
+    return;
+  }
+
+  // 通常API
+  executeApi(item.label, item.path, item.showResponse);
 }

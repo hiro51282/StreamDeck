@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 #include <WiFiUdp.h>
 
@@ -7,10 +8,5 @@ extern WiFiUDP udp;
 
 void executeWOL();
 void executeAction(const char *title, const char *url, bool showResponse);
-void actionWOL();
-void actionShutdown();
-void actionStatus();
-void actionTemp();
-void actionMemory();
-void actionPing();
-void actionUptime();
+String buildUrl(const char *path);
+void executeApi(const char *title, const char *path, bool showResponse);

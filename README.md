@@ -2,7 +2,7 @@
 
 物理ボタンでPCを操作する小型StreamDeck
 
-このリポジトリは
+ESP32を使ったローカル操作デバイスを構築したい人向けのプロジェクトです。
 
 * ESP32でStreamDeckを作る
 * 開発環境をDockerだけで再現する
@@ -48,7 +48,7 @@ Serverは「実行」
 
 * Flask API
 * configはGit除外
-* venv前提
+* Python + Flask（venv前提）
 
 ---
 
@@ -94,6 +94,12 @@ sdserver
 * ESP32：UIに専念
 * Server：処理を持つ
 * 疎結合（HTTP）
+
+---
+
+# 状態
+
+- ブレッドボード上で実機動作確認済み
 
 ---
 
