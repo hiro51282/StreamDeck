@@ -1,0 +1,9 @@
+services:
+  server_py:
+    build: ./server_py
+    container_name: streamdeck_server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server_py:/app
+    restart: always

@@ -5,6 +5,7 @@ import psutil
 import time
 from config import TOKEN
 
+IS_DOCKER = os.path.exists("/.dockerenv")
 app = Flask(__name__)
 
 # 共通認証
@@ -14,11 +15,12 @@ def check_token():
 
 @app.route("/shutdown")
 def shutdown():
-    if not check_token():
+    if request.args.get("token") != TOKEN:
         return "NG", 403
 
-    print("Shutdown called")
-    os.system("sudo /usr/sbin/shutdown now")
+    if IS_DOCKER:
+        return "SKIPPED (Docker)"
+    subprocess.run(["sudo", "/usr/local/bin/streamdeck_shutdown.sh"])
     return "OK"
 
 
