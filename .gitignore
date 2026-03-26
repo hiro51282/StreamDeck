@@ -5,30 +5,35 @@
 *.log
 *.tmp
 .DS_Store
+__pycache__/
+*.pyc
 
 # =========================
 # ESP32（PlatformIO）
 # =========================
-esp32/.pio
-esp32/.vscode
+esp32_arduino/.pio
+esp32_arduino/.pioenvs
+esp32_arduino/.piolibdeps
+esp32_arduino/.vscode
 
 # 機密情報（ESP32）
-esp32/src/wifi_config.h
-esp32/src/wol_config.h
+esp32_arduino/src/wifi_config.h
+esp32_arduino/src/wol_config.h
+
 # =========================
 # Server（Python）
 # =========================
-server/venv
-server/__pycache__/
-server/*.pyc
+server_py/venv/
+server_py/.venv/
 
 # 機密情報（Server）
-server/config.py
+server_py/config.py
 
 # =========================
 # その他
 # =========================
 *.bak
 *.swp
+
 # OS系
 Thumbs.db
