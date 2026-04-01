@@ -248,4 +248,3 @@ Dockerの restart 設定に依存する：
 # TODO
 
 * Go版実装
-* TinyGo版との統合設計

@@ -34,9 +34,4 @@ ESP32（Arduinoフレームワーク）によるUIデバイス実装
 * Docker環境で再現可能
 * Server APIに依存
 
----
 
-# TODO
-
-* TinyGo版との比較
-* パフォーマンス検証

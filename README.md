@@ -25,7 +25,6 @@
 ## ESP32
 
 * esp32_arduino/（C++）
-* esp32_tinygo/（TinyGo）※予定
 
 ## Server
 
@@ -128,7 +127,6 @@ go run main.go
 
 # 特徴
 
-* 実装差し替え可能（C++ / TinyGo / Python / Go）
 * Dockerによる環境再現
 * 疎結合設計（HTTP）
 * UIと処理の責務分離

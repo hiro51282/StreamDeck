@@ -260,4 +260,3 @@ Dockerの restart 設定に依存する：
 # TODO
 
 * API完全実装（Python版と一致）
-* TinyGo版との統合設計
