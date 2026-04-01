@@ -14,7 +14,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define SW 14
 #define DT 27
 #define CLK 26
-#define BACK 25
+#define BACK 21
 #define I2C_SCL 22
 #define I2C_SDA 23
 

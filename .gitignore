@@ -30,6 +30,15 @@ server_py/.venv/
 server_py/config.py
 
 # =========================
+# Server（Go）
+# =========================
+# バイナリ
+server_go/server
+
+# 機密情報（Server）
+server_go/config.json
+
+# =========================
 # その他
 # =========================
 *.bak

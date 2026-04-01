@@ -43,10 +43,18 @@ python3 server.py
 ## Docker実行（開発・検証）
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ※ shutdownは無効（SKIPPED）
+
+### 開発時の反映（DevEx）
+
+コード変更後はコンテナを再起動することで反映される：
+
+```bash
+docker restart streamdeck_server
+```
 
 ---
 
@@ -93,7 +101,7 @@ whoami
 
 ## 前提
 
-* docker-compose.ymlでcontainer_nameを指定すること
+* docker compose.ymlでcontainer_nameを指定すること
 
 例：
 
@@ -230,7 +238,14 @@ Dockerの restart 設定に依存する：
 以下の優先順位で動作する：
 
 1. systemd（有効な場合） → 本番モードで起動
-2. Docker（restart: always の
+2. Docker（restart: always の場合） → 開発モードで起動
+3. 手動実行（mode.sh）
+
+※ systemdとDockerを同時に有効にすると競合するため注意
+
+---
+
+# TODO
 
 * Go版実装
 * TinyGo版との統合設計
