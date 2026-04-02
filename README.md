@@ -2,12 +2,10 @@
 
 物理ボタンでPCを操作するローカルStreamDeckシステム
 
-本プロジェクトは「仕様」と「実装」を分離し、 複数言語・複数構成で同一機能を再現可能な構成を持つ。
+本プロジェクトは「仕様」と「実装」を分離し、構成要素を疎結合にすることで再現性と拡張性を確保する。
 
 * UIデバイス（ESP32）
 * 実行サーバ（HTTP API）
-
-各実装は疎結合で設計されており、差し替え可能。
 
 ---
 
@@ -20,7 +18,7 @@
 
 ---
 
-# 実装バリエーション
+# 実装
 
 ## ESP32
 
@@ -29,6 +27,8 @@
 ## Server
 
 * server_go/（Go）
+
+※ ServerはGo実装に統一
 
 ---
 
@@ -55,7 +55,7 @@
 * 配線構成
 * ケース加工
 
-# ハード構成
+## 構成
 
 * ESP32
 * LCD1602（I2C）
@@ -68,9 +68,9 @@
 
 # セットアップ
 
-## Server
+## Server（Go）
 
-### 起動前設定（共通）
+### 起動前設定
 
 * 設定ファイルを用意（Git管理外）
 
@@ -81,11 +81,11 @@
 * ネットワーク
 
   * 同一LAN内で利用
-  * ポート `5000` を使用（必要に応じて開放）
+  * ポート `5000` を使用
 
 ---
 
-### 初回（追加時）
+### 開発実行
 
 ```bash
 cd server_go
@@ -93,45 +93,40 @@ go build -o streamdeck-server
 ./streamdeck-server
 ```
 
-### 起動（本番）
+---
 
-```bash
-cd server_go
-go build -o streamdeck-server
-./streamdeck-server
-```
+### 本番運用
 
-または systemd により自動起動
+* systemd により自動起動
+* バイナリは `/usr/local/bin/streamdeck-server` に配置
 
 ---
 
 ## ESP32
 
-### 起動前設定（共通）
+### 起動前設定
 
 * 設定ファイルを用意（Git管理外）
 
-  * `esp32/src/wifi_config.h`（例: `wifi_config.h.example` をコピー）
-  * `esp32/src/wol_config.h`（例: `wol_config.h.example` をコピー）
+  * `esp32/src/wifi_config.h`
+  * `esp32/src/wol_config.h`
 * 必須設定
 
   * `WIFI_SSID` / `WIFI_PASS`
-  * `SERVER_IP`（ServerのIPアドレス）
-  * `TOKEN`（Server側と一致させる）
+  * `SERVER_IP`
+  * `TOKEN`
 
-※ `TOKEN` と `SERVER_IP` はServer設定と一致させること
-
----
-
-各実装ディレクトリを参照（Docker対応）
+※ Server設定と一致させること
 
 ---
 
 # 特徴
 
-* Dockerによる環境再現
 * 疎結合設計（HTTP）
 * UIと処理の責務分離
+* Goによる軽量サーバ
+
+※ Dockerは開発・検証用途でのみ使用
 
 ---
 
@@ -145,16 +140,23 @@ go build -o streamdeck-server
 
 # 状態
 
-* ブレッドボード上で実機動作確認済み
+* Goサーバ + ESP32 による実機動作確認済み
+* シャットダウン機能動作確認済み
 
 ---
 
 # リリース
 
-## v1.0.0
+## v1.1.0
 
-* StreamDeck基本機能完成
-* メニューUI / confirm / スクロール対応
-* Docker環境構築
+* Go版へ完全移行
+* systemdによる常駐化
+* シャットダウン機能安定化
 
-初期完成版
+---
+
+# TODO
+
+* プロセス一覧取得
+* プロセスキル機能
+* 動的メニュー対応
