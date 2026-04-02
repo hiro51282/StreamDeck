@@ -5,8 +5,6 @@
 *.log
 *.tmp
 .DS_Store
-__pycache__/
-*.pyc
 
 # =========================
 # ESP32（PlatformIO）
@@ -20,20 +18,12 @@ esp32_arduino/.vscode
 esp32_arduino/src/wifi_config.h
 esp32_arduino/src/wol_config.h
 
-# =========================
-# Server（Python）
-# =========================
-server_py/venv/
-server_py/.venv/
-
-# 機密情報（Server）
-server_py/config.py
 
 # =========================
 # Server（Go）
 # =========================
 # バイナリ
-server_go/server
+server_go/streamdeck-server
 
 # 機密情報（Server）
 server_go/config.json

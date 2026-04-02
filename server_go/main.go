@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 	"os/exec"
-	"github.com/shirou/gopsutil/v3/mem"
+	"time"
+
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/mem"
 )
+
 type Config struct {
 	Token string `json:"token"`
 }
@@ -28,13 +30,13 @@ func init() {
 	}
 }
 
-func check_token(r *http.Request) bool{
+func check_token(r *http.Request) bool {
 	return r.URL.Query().Get("token") == config.Token
 }
 
 func main() {
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		if ! check_token(r) {
+		if !check_token(r) {
 			http.Error(w, "NG", http.StatusForbidden)
 			return
 		}
@@ -43,7 +45,7 @@ func main() {
 			fmt.Fprint(w, "SKIPPED")
 			return
 		}
-		
+
 		cmd := exec.Command("sudo", "/usr/local/bin/streamdeck_shutdown.sh")
 		err := cmd.Run()
 
@@ -56,7 +58,7 @@ func main() {
 	})
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		if ! check_token(r) {
+		if !check_token(r) {
 			http.Error(w, "NG", http.StatusForbidden)
 			return
 		}
@@ -66,11 +68,11 @@ func main() {
 	})
 
 	http.HandleFunc("/temp", func(w http.ResponseWriter, r *http.Request) {
-		if ! check_token(r) {
+		if !check_token(r) {
 			http.Error(w, "NG", http.StatusForbidden)
 			return
 		}
-		
+
 		temps, _ := host.SensorsTemperatures()
 		if len(temps) > 0 {
 			fmt.Fprintf(w, "%.2f", temps[0].Temperature)
@@ -80,7 +82,7 @@ func main() {
 	})
 
 	http.HandleFunc("/memory", func(w http.ResponseWriter, r *http.Request) {
-		if ! check_token(r) {
+		if !check_token(r) {
 			http.Error(w, "NG", http.StatusForbidden)
 			return
 		}
@@ -89,7 +91,7 @@ func main() {
 	})
 
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		if ! check_token(r) {
+		if !check_token(r) {
 			http.Error(w, "NG", http.StatusForbidden)
 			return
 		}
@@ -98,7 +100,7 @@ func main() {
 	})
 
 	http.HandleFunc("/uptime", func(w http.ResponseWriter, r *http.Request) {
-		if ! check_token(r) {
+		if !check_token(r) {
 			http.Error(w, "NG", http.StatusForbidden)
 			return
 		}
@@ -107,6 +109,6 @@ func main() {
 		fmt.Fprintf(w, "%d", uptime)
 	})
 
-	fmt.Println("Server running on :5001")
-	http.ListenAndServe(":5001", nil)
+	fmt.Println("Server running on :5000")
+	http.ListenAndServe(":5000", nil)
 }

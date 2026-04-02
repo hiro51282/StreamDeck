@@ -28,8 +28,7 @@
 
 ## Server
 
-* server_py/（Flask）
-* server_go/（Go）※予定
+* server_go/（Go）
 
 ---
 
@@ -45,6 +44,16 @@
 | /uptime   | 起動時間      |
 
 ---
+
+# ハード構成
+
+## ケース設計
+
+* 設計方針
+* レイアウト
+* 使用部品
+* 配線構成
+* ケース加工
 
 # ハード構成
 
@@ -65,7 +74,7 @@
 
 * 設定ファイルを用意（Git管理外）
 
-  * `server_py/config.py`（例: `config.py.example` をコピー）
+  * `server_go/config.json`（例: `config.json.example` をコピー）
 * 必須設定
 
   * `TOKEN`：認証トークン（ESP32側と一致させる）
@@ -79,27 +88,20 @@
 ### 初回（追加時）
 
 ```bash
-# Python版
-cd server_py
-pip install -r requirements.txt
-python server.py
+cd server_go
+go build -o streamdeck-server
+./streamdeck-server
 ```
 
-※ 将来的にDockerへ移行予定
-
-### 切り替え（実装変更時）
+### 起動（本番）
 
 ```bash
-# Python版
-cd server_py
-python server.py
-
-# Go版（予定）
 cd server_go
-go run main.go
+go build -o streamdeck-server
+./streamdeck-server
 ```
 
-※ API仕様は共通のため、どちらでも動作可能
+または systemd により自動起動
 
 ---
 

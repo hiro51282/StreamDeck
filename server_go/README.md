@@ -29,11 +29,29 @@ StreamDeck用HTTP APIサーバ（Go実装）
 
 # セットアップ
 
+## ビルド（共通）
+
+```bash
+go build -o streamdeck-server
+```
+
+---
+
+## 本番配置（推奨）
+
+```bash
+sudo mv streamdeck-server /usr/local/bin/streamdeck-server
+```
+
+※ パスを通すことで systemd や手動実行が安定する
+
+---
+
 ## ホスト実行（本番・実機操作）
 
 ```bash
-go build -o server
-./server
+go build -o streamdeck-server
+./streamdeck-server
 ```
 
 ※ shutdownなどのOS操作はこのモードでのみ有効
@@ -64,8 +82,8 @@ docker restart streamdeck_server_go
 
 ```bash
 cd server_go
-go build -o server
-./server
+go build -o streamdeck-server
+./streamdeck-server
 ```
 
 別ターミナルで確認：
@@ -120,6 +138,44 @@ container_name: streamdeck_server_go
 
 ## 初回のみ実行
 
+### shutdown_setup.sh（例）
+
+```bash
+#!/bin/bash
+set -e
+
+# 実行用スクリプト配置
+sudo tee /usr/local/bin/streamdeck_shutdown.sh > /dev/null << 'EOF'
+#!/bin/bash
+/sbin/shutdown -h now
+EOF
+
+sudo chmod +x /usr/local/bin/streamdeck_shutdown.sh
+
+# sudo権限付与（パスワード不要・限定）
+SUDO_FILE="/etc/sudoers.d/streamdeck"
+echo "ubuntu ALL=(ALL) NOPASSWD: /usr/local/bin/streamdeck_shutdown.sh" | sudo tee $SUDO_FILE
+sudo chmod 440 $SUDO_FILE
+
+echo "[OK] setup complete"
+```
+
+---
+
+### shutdown_remove.sh（例）
+
+```bash
+#!/bin/bash
+set -e
+
+sudo rm -f /usr/local/bin/streamdeck_shutdown.sh
+sudo rm -f /etc/sudoers.d/streamdeck
+
+echo "[OK] removed"
+```
+
+---
+
 ```bash
 sudo ./shutdown_setup.sh
 ```
@@ -163,7 +219,7 @@ After=network.target
 [Service]
 User=ubuntu
 WorkingDirectory=/home/path/to/work/StreamDeck/server_go
-ExecStart=/home/path/to/work/StreamDeck/server_go/server
+ExecStart=/usr/local/bin/streamdeck-server
 Restart=always
 
 [Install]
@@ -253,10 +309,9 @@ Dockerの restart 設定に依存する：
 * /temp 実装済み
 * /shutdown（DockerではSKIPPED / ホストで有効 ※未検証）
 * Go版単体で動作確認済み
-* Python版と機能同等（shutdown除く）
 
 ---
 
 # TODO
 
-* API完全実装（Python版と一致）
+* TinyGo版との統合設計
