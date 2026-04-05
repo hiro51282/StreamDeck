@@ -1,11 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 func buildState(menu string, s *State) *State {
-	items := make([]Item, len(menus[menu]))
-	copy(items, menus[menu])
-
+	items := buildMenu(menu, s)
 	if menu == "RESULT" && len(items) > 0 {
 		items[0].Name = s.Result
 	} else {
@@ -18,7 +19,14 @@ func buildState(menu string, s *State) *State {
 		Items:       items,
 		Result:      s.Result,
 		MenuHistory: s.MenuHistory,
+		Processes:   s.Processes,
 	}
+}
+
+func enterProcessList(s *State) *State {
+	list, _ := getTopProcesses(5)
+	s.Processes = list
+	return s
 }
 
 type ActionFunc func(*State) *State
@@ -81,6 +89,35 @@ var actions = map[string]ActionFunc{
 		} else {
 			s.Result = fmt.Sprintf("%d", val)
 		}
+		s.MenuHistory = append(s.MenuHistory, s.Menu)
+		return buildState("RESULT", s)
+	},
+	"enter_process": func(s *State) *State {
+		list, err := getTopProcesses(5)
+		if err != nil {
+			s.Result = "ERROR"
+			return s
+		}
+
+		s.Processes = list
+		s.MenuHistory = append(s.MenuHistory, s.Menu)
+
+		return buildState("PROCESS_LIST", s)
+	},
+	"kill_process": func(s *State) *State {
+		pidStr := s.Items[s.Cursor].Value
+
+		// PID変換
+		pid, _ := strconv.Atoi(pidStr)
+
+		err := killProcess(pid)
+
+		if err != nil {
+			s.Result = "FAIL"
+		} else {
+			s.Result = "KILLED"
+		}
+
 		s.MenuHistory = append(s.MenuHistory, s.Menu)
 		return buildState("RESULT", s)
 	},

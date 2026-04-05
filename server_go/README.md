@@ -388,3 +388,47 @@ Dockerの restart 設定に依存する：
 * Python版と機能同等（shutdown除く）
 
 #
+
+---
+
+# テストコマンド
+
+## API直呼び
+
+```bash
+curl localhost:5000/status?token=<your token>
+curl localhost:5000/temp?token=<your token>
+curl localhost:5000/memory?token=<your token>
+curl localhost:5000/ping?token=<your token>
+curl localhost:5000/uptime?token=<your token>
+```
+
+---
+
+## 画面系
+
+### 表示
+
+```bash
+curl localhost:5000/menu?token=<your token>
+```
+
+### 操作
+
+```bash
+curl -X POST "http://localhost:5000/action?token=<your token>" -H "Content-Type: application/json" -d '{"type":"select"}'
+curl -X POST "http://localhost:5000/action?token=<your token>" -H "Content-Type: application/json" -d '{"type":"up"}'
+curl -X POST "http://localhost:5000/action?token=<your token>" -H "Content-Type: application/json" -d '{"type":"down"}'
+curl -X POST "http://localhost:5000/action?token=<your token>" -H "Content-Type: application/json" -d '{"type":"back"}'
+```
+
+---
+
+## プロセスキル用テスト
+
+```bash
+bash -c "exec -a testproc sh -c 'while true; do :; sleep 0.01; done'"
+```
+
+※ CPUを適度に消費するテストプロセス
+※ kill機能の動作確認に使用

@@ -7,13 +7,20 @@ type Item struct {
 	NextMenu string `json:"next_menu,omitempty"`
 }
 
+type Process struct {
+	PID  int32
+	Name string
+	CPU  float64
+	MEM  float64
+}
+
 type State struct {
-	Menu   string `json:"menu"`
-	Cursor int    `json:"cursor"`
-	Items  []Item `json:"items"`
-	Result string `json:"result,omitempty"`
-	// PrevMenu    string   `json:"PrevMenu,omitempty"`
-	MenuHistory []string `json:"MenuHistory,omitempty"`
+	Menu        string    `json:"menu"`
+	Cursor      int       `json:"cursor"`
+	Items       []Item    `json:"items"`
+	Result      string    `json:"result,omitempty"`
+	MenuHistory []string  `json:"MenuHistory,omitempty"`
+	Processes   []Process `json:"processes,omitempty"`
 }
 
 func NewState() *State {
@@ -45,10 +52,8 @@ var menus = map[string][]Item{
 		{Name: "PING", Value: "Ping", Action: "get_ping"},
 		{Name: "UPTIME", Value: "Uptime", Action: "get_uptime"},
 	},
-	// ここではダミーのプロセスリストを返す
-	"PROCESS_LIST": {
-		{Name: "nginx", Value: "Running", Action: "/taskkill?name=nginx"},
-		{Name: "mysql", Value: "Stopped", Action: "/taskkill?name=mysql"},
-		{Name: "redis", Value: "Running", Action: "/taskkill?name=redis"},
-	},
+}
+
+var menuHooks = map[string]func(*State) *State{
+	"PROCESS_LIST": enterProcessList,
 }

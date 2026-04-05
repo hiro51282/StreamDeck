@@ -10,12 +10,28 @@ func check_token(r *http.Request) bool {
 	return r.URL.Query().Get("token") == config.Token
 }
 
-func buildMenu(menu string) []Item {
-	item := menus[menu]
-	if len(item) == 0 {
-		return []Item{}
+func buildMenu(menu string, s *State) []Item {
+	if menu == "PROCESS_LIST" {
+		var items []Item
+
+		for _, p := range s.Processes {
+			items = append(items, Item{
+				Name:   fmt.Sprintf("%s (%.0f/%.0f)", p.Name, p.CPU, p.MEM),
+				Action: "kill_process", // 後で使う
+				Value:  fmt.Sprintf("%d", p.PID),
+			})
+		}
+
+		// Back追加
+		items = append(items, Item{
+			Name:   "Back",
+			Action: "back",
+		})
+
+		return items
 	}
-	return item
+
+	return menus[menu]
 }
 func handleSelect(s *State) *State {
 	if len(s.Items) == 0 {
@@ -35,9 +51,16 @@ func handleSelect(s *State) *State {
 	// ② NextMenu（遷移）
 	if item.NextMenu != "" {
 		s.MenuHistory = append(s.MenuHistory, s.Menu)
-		return buildState(item.NextMenu, s)
-	}
 
+		next := item.NextMenu
+
+		// フック実行
+		if hook, ok := menuHooks[next]; ok {
+			s = hook(s)
+		}
+
+		return buildState(next, s)
+	}
 	return s
 }
 
