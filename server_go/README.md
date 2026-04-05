@@ -18,12 +18,27 @@ StreamDeck用HTTP APIサーバ（Go実装）
 
 # エンドポイント
 
+## UI制御（ESP32用）
+
+* GET /menu
+
+  * 現在のUI状態（State）を取得
+
+* POST /action
+
+  * ユーザー操作を送信
+  * body: { "type": "up" | "down" | "select" | "back" }
+
+## 内部サービス（直接利用は非推奨）
+
 * /shutdown
 * /status
 * /temp
 * /memory
 * /ping
 * /uptime
+
+※ 上記はメニュー経由で呼び出される内部サービスとして扱う
 
 ---
 
@@ -50,9 +65,15 @@ sudo mv streamdeck-server /usr/local/bin/streamdeck-server
 ## ホスト実行（本番・実機操作）
 
 ```bash
+go run .
+```
+
+※ 開発時は go run . を使用（ビルド不要・即時反映）
+※ shutdownなどのOS操作はこのモードでのみ有効bash
 go build -o streamdeck-server
 ./streamdeck-server
-```
+
+````
 
 ※ shutdownなどのOS操作はこのモードでのみ有効
 
@@ -62,7 +83,7 @@ go build -o streamdeck-server
 
 ```bash
 docker compose up -d --build
-```
+````
 
 ※ shutdownは無効（SKIPPED）
 
@@ -129,6 +150,20 @@ container_name: streamdeck_server_go
 ```
 
 ※ これが無いとモード判定が崩れる
+
+---
+
+# ⚠️ 重要（初回セットアップ）
+
+## 環境変数
+
+シャットダウンは明示的に許可しない限り実行されない。
+
+```bash
+export ALLOW_SHUTDOWN=true
+```
+
+※ 未設定の場合はFAILになる（安全装置）
 
 ---
 
@@ -239,6 +274,39 @@ sudo systemctl start streamdeck
 sudo systemctl stop streamdeck
 ```
 
+---
+
+# 開発モード（ネイティブGo）
+
+systemdで動作しているバイナリを停止し、`go run`で開発・デバッグを行う。
+
+## 開発開始
+
+```bash
+sudo systemctl stop streamdeck
+cd server_go
+go run .
+```
+
+* printログがそのままコンソールに出力される
+* ビルド不要で即時反映
+* panicやエラーを直接確認可能
+
+## 本番へ戻す
+
+```bash
+go build -o streamdeck-server
+sudo mv streamdeck-server /usr/local/bin/streamdeck-server
+sudo systemctl start streamdeck
+```
+
+---
+
+```bash
+sudo systemctl start streamdeck
+sudo systemctl stop streamdeck
+```
+
 ## 状態確認
 
 ```bash
@@ -249,6 +317,17 @@ systemctl status streamdeck
 
 * Dockerの restart: always と併用すると競合する
 * 本番モードでのみ使用すること
+
+---
+
+# 備考
+
+## 設計メモ（重要）
+
+* サーバはState（現在のメニュー状態）を保持する
+* ESP32は完全ステートレス
+* ServiceFunc / routes は「内部サービス定義」であり、直接HTTPとして使う前提ではない
+* 実際の操作は /action → 内部サービス呼び出し で実行される
 
 ---
 
@@ -279,14 +358,11 @@ systemctl status streamdeck
 
 Dockerの restart 設定に依存する：
 
-* restart: always
-  → 再起動後、自動でDocker（開発モード）になる
+* restart: always → 再起動後、自動でDocker（開発モード）になる
 
-* restartなし
-  → 再起動後は何も起動しない（手動でmode.sh実行）
+* restartなし → 再起動後は何も起動しない（手動でmode.sh実行）
 
-※ systemdを有効にしている場合は「本番モードで自動起動」になる
-※ Dockerのrestart設定とsystemdは併用しないこと
+※ systemdを有効にしている場合は「本番モードで自動起動」になる ※ Dockerのrestart設定とsystemdは併用しないこと
 
 ---
 
@@ -309,9 +385,6 @@ Dockerの restart 設定に依存する：
 * /temp 実装済み
 * /shutdown（DockerではSKIPPED / ホストで有効 ※未検証）
 * Go版単体で動作確認済み
+* Python版と機能同等（shutdown除く）
 
----
-
-# TODO
-
-* TinyGo版との統合設計
+#
