@@ -427,8 +427,8 @@ curl -X POST "http://localhost:5000/action?token=<your token>" -H "Content-Type:
 ## プロセスキル用テスト
 
 ```bash
-bash -c "exec -a testproc sh -c 'while true; do :; sleep 0.01; done'"
+bash -c "exec -a mytestproc killtarget > /dev/null"
 ```
 
-※ CPUを適度に消費するテストプロセス
+※ CPUを消費するテストプロセス
 ※ kill機能の動作確認に使用
