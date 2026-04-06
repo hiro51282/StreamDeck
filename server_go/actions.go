@@ -141,6 +141,9 @@ var uiActions = map[string]func(*State) *State{
 	"select": handleSelect,
 	"back": func(s *State) *State {
 		if len(s.MenuHistory) == 0 {
+			s.Menu = "MAIN"
+			s.Cursor = 0
+			s.Items = buildMenu("MAIN", s)
 			return s
 		}
 
